@@ -38,7 +38,7 @@ def generate_attack_chain(raw_scan_json):
     You are an expert Senior Penetration Tester. 
     Analyze the raw vulnerability scan JSON.
     You MUST output a strictly formatted JSON object following this exact structure.
-    Do not limit yourself to one path. List ALL distinct and possible attack chains based on the vulnerabilities found:
+    Do not limit yourself to just one possible attack path. EXHAUSTIVELY list EVERY SINGLE possible attack chain permutation. Leave no potential attack path undocumented, no matter how complex:"
     {
         "executive_summary": "A 2-sentence summary of the overall risk level.",
         "possible_attack_chains": [
@@ -62,14 +62,14 @@ def generate_attack_chain(raw_scan_json):
     }
     """
 
-    print("🧠 Gemini is generating the comprehensive JSON report with multiple attack chains...")
+    print("Generating the comprehensive JSON report with multiple attack chains...")
     
     response = client.models.generate_content(
         model='gemini-2.5-flash',
         contents=f"Here is the raw scanner data: {raw_scan_json}",
         config=types.GenerateContentConfig(
             system_instruction=system_prompt,
-            max_output_tokens=2000, # Increased tokens to allow for longer, detailed reports
+            max_output_tokens=8000, # Increased tokens to allow for longer, detailed reports
             response_mime_type="application/json",
         )
     )
