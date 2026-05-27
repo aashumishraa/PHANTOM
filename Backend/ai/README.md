@@ -13,7 +13,11 @@ The output JSON file contains three variables (keys):
 Disclaimer: But to use it, you will have to add your API key in the Environment variable file (.env) to protect system from crashing.
 
 
-Sample Report File
+Sample Report File 
+
+Input JSON file - Object_raw.JSON
+
+Output JSON file - Object_report.JSON
 
 {
     "executive_summary": "The target system exhibits critical vulnerabilities across multiple services, indicating a high likelihood of compromise. Immediate action is required to secure database endpoints and enforce strict authentication protocols.",

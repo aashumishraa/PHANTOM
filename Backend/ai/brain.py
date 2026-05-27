@@ -91,6 +91,13 @@ if __name__ == "__main__":
         print("\n=== FINAL STRUCTURED REPORT ===")
         print(json.dumps(parsed_json, indent=4))
         
+        # NEW: Save the parsed JSON to an actual file
+        output_filename = target_file.replace("_raw.json", "_report.json")
+        with open(output_filename, "w") as out_file:
+            json.dump(parsed_json, out_file, indent=4)
+            
+        print(f"✅ Report successfully saved to: {output_filename}")
+        
     except FileNotFoundError:
         print(f"⚠️ Could not find {target_file}. Make sure you pulled the backend files!")
     except json.JSONDecodeError:
