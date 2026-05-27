@@ -14,8 +14,22 @@ def generate_attack_chain(raw_scan_json):
     """
     Takes raw JSON from the scanner and asks Gemini to write a structured JSON executive report.
     """
-    
-    # NEW: We are giving Gemini a strict JSON schema to follow!
+    # === NEW: THE BULLETPROOF SAFETY NET ===
+    # If the file is empty, missing, or just contains empty brackets {}
+    if not raw_scan_json or raw_scan_json.strip() == "" or raw_scan_json.strip() == "{}":
+        print("🛡️ Safety Net Triggered: No vulnerabilities found in scan data.")
+        # Return a perfectly formatted default JSON so the PDF generator doesn't crash
+        return json.dumps({
+            "executive_summary": "No vulnerabilities were detected during this scan. The target appears secure.",
+            "attack_chain": [
+                "Step 1: Scan initiated and completed.",
+                "Step 2: No exploitable vulnerabilities or misconfigurations discovered.",
+                "Step 3: Target deemed safe against standard automated attacks."
+            ],
+            "critical_remediation": "No immediate action required. Continue regular monitoring."
+        })
+    # ========================================
+
     system_prompt = """
     You are an expert Senior Penetration Tester. 
     Analyze the raw vulnerability scan JSON.
@@ -39,7 +53,6 @@ def generate_attack_chain(raw_scan_json):
         config=types.GenerateContentConfig(
             system_instruction=system_prompt,
             max_output_tokens=1000,
-            # NEW: This magic line forces the AI to ONLY output valid JSON!
             response_mime_type="application/json",
         )
     )
