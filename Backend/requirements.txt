@@ -1,0 +1,7 @@
+# PHANTOM — Core API & Tool Engine
+# Python 3.10+ required
+
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.7.0
+websockets>=12.0
