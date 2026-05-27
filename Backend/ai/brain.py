@@ -12,47 +12,64 @@ client = genai.Client()
 
 def generate_attack_chain(raw_scan_json):
     """
-    Takes raw JSON from the scanner and asks Gemini to write a structured JSON executive report.
+    Takes raw JSON from the scanner and asks Gemini to write a structured JSON comprehensive report.
     """
-    # === NEW: THE BULLETPROOF SAFETY NET ===
-    # If the file is empty, missing, or just contains empty brackets {}
+    # === UPDATED BULLETPROOF SAFETY NET ===
     if not raw_scan_json or raw_scan_json.strip() == "" or raw_scan_json.strip() == "{}":
         print("🛡️ Safety Net Triggered: No vulnerabilities found in scan data.")
-        # Return a perfectly formatted default JSON so the PDF generator doesn't crash
         return json.dumps({
             "executive_summary": "No vulnerabilities were detected during this scan. The target appears secure.",
-            "attack_chain": [
-                "Step 1: Scan initiated and completed.",
-                "Step 2: No exploitable vulnerabilities or misconfigurations discovered.",
-                "Step 3: Target deemed safe against standard automated attacks."
+            "possible_attack_chains": [
+                {
+                    "chain_name": "Baseline Security Verification",
+                    "steps": [
+                        "Step 1: Scan initiated and completed across all target endpoints.",
+                        "Step 2: No exploitable vulnerabilities or misconfigurations discovered.",
+                        "Step 3: Target deemed safe against standard automated attacks."
+                    ]
+                }
             ],
             "critical_remediation": "No immediate action required. Continue regular monitoring."
         })
     # ========================================
 
+    # === UPDATED PROMPT FOR MULTIPLE CHAINS ===
     system_prompt = """
     You are an expert Senior Penetration Tester. 
     Analyze the raw vulnerability scan JSON.
-    You MUST output a strictly formatted JSON object following this exact structure:
+    You MUST output a strictly formatted JSON object following this exact structure.
+    Do not limit yourself to one path. List ALL distinct and possible attack chains based on the vulnerabilities found:
     {
         "executive_summary": "A 2-sentence summary of the overall risk level.",
-        "attack_chain": [
-            "Step 1: Explain the initial foothold...",
-            "Step 2: Explain the privilege escalation or lateral movement...",
-            "Step 3: Explain the final impact (data exfiltration, takeover, etc.)..."
+        "possible_attack_chains": [
+            {
+                "chain_name": "A clear, professional title for this specific attack path (e.g., 'Database Exfiltration via SQL Injection')",
+                "steps": [
+                    "Step 1: Explain the initial foothold...",
+                    "Step 2: Explain the privilege escalation or lateral movement...",
+                    "Step 3: Explain the final impact..."
+                ]
+            },
+            {
+                "chain_name": "Title for the second attack path...",
+                "steps": [
+                    "Step 1...",
+                    "Step 2..."
+                ]
+            }
         ],
-        "critical_remediation": "The number one thing the development team must fix immediately."
+        "critical_remediation": "The single most important overarching fix the development team must prioritize."
     }
     """
 
-    print("🧠 Gemini is generating the structured JSON report...")
+    print("🧠 Gemini is generating the comprehensive JSON report with multiple attack chains...")
     
     response = client.models.generate_content(
         model='gemini-2.5-flash',
         contents=f"Here is the raw scanner data: {raw_scan_json}",
         config=types.GenerateContentConfig(
             system_instruction=system_prompt,
-            max_output_tokens=1000,
+            max_output_tokens=2000, # Increased tokens to allow for longer, detailed reports
             response_mime_type="application/json",
         )
     )
