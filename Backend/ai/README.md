@@ -17,7 +17,7 @@ Sample Report File
 
 Input JSON file - Object_raw.JSON
 
-Output JSON file - Object_report.JSON
+Output JSON file - Object_report.JSON (It would get saved in a folder named temp_results, if the folder is not created it will create one and then save the output file).
 
 {
     "executive_summary": "The target system exhibits critical vulnerabilities across multiple services, indicating a high likelihood of compromise. Immediate action is required to secure database endpoints and enforce strict authentication protocols.",

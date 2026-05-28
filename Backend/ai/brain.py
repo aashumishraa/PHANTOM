@@ -69,8 +69,16 @@ def generate_attack_chain(raw_scan_json):
         contents=f"Here is the raw scanner data: {raw_scan_json}",
         config=types.GenerateContentConfig(
             system_instruction=system_prompt,
-            max_output_tokens=8000, # Increased tokens to allow for longer, detailed reports
+            max_output_tokens=8000, 
             response_mime_type="application/json",
+            # === NEW: TURN OFF SAFETY FILTERS FOR CYBERSECURITY ===
+            safety_settings=[
+                types.SafetySetting(
+                    category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                    threshold=types.HarmBlockThreshold.BLOCK_NONE,
+                )
+            ]
+            # ======================================================
         )
     )
     
@@ -92,11 +100,25 @@ if __name__ == "__main__":
         print(json.dumps(parsed_json, indent=4))
         
         # NEW: Save the parsed JSON to an actual file
-        output_filename = target_file.replace("_raw.json", "_report.json")
+       # === NEW: Save the parsed JSON to a DIFFERENT folder ===
+        # 1. Define the path for the new temp_outputs folder
+        output_dir = os.path.join(os.path.dirname(__file__), "..", "temp_outputs")
+        
+        # 2. Automatically create the folder if it doesn't exist yet (prevents crashes!)
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # 3. Extract just the filename (e.g., "6c6f..._raw.json") and change the ending
+        base_name = os.path.basename(target_file).replace("_raw.json", "_report.json")
+        
+        # 4. Combine the new folder path with the new filename
+        output_filename = os.path.join(output_dir, base_name)
+        
         with open(output_filename, "w") as out_file:
             json.dump(parsed_json, out_file, indent=4)
             
         print(f"✅ Report successfully saved to: {output_filename}")
+        # =======================================================
+            
         
     except FileNotFoundError:
         print(f"⚠️ Could not find {target_file}. Make sure you pulled the backend files!")
