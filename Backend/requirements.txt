@@ -5,3 +5,4 @@ fastapi>=0.111.0
 uvicorn[standard]>=0.29.0
 pydantic>=2.7.0
 websockets>=12.0
+fpdf2>=2.7.9

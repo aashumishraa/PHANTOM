@@ -17,7 +17,9 @@ Then open:
 from __future__ import annotations
 
 import logging
+import sys
 import uuid
+from pathlib import Path
 from typing import Any, Dict
 
 from fastapi import (
@@ -28,6 +30,7 @@ from fastapi import (
     WebSocketDisconnect,
 )
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 from models import ScanRequest, ScanResponse, ScanStatusResponse
 from scanner import run_security_tools, scan_registry
@@ -135,6 +138,93 @@ async def get_scan_status(scan_id: str) -> ScanStatusResponse:
         status=entry["status"],
         mock_mode=entry.get("mock_mode", False),
         result_file=entry.get("result_file"),
+    )
+
+
+@app.get(
+    "/api/scan/results/{scan_id}",
+    summary="Get scan results JSON",
+    tags=["Scans"],
+)
+async def get_scan_results(scan_id: str) -> dict:
+    """
+    Returns the full scan results JSON for a completed scan.
+    Reads the file written to temp_results/ by the scanner.
+    """
+    import json
+    from pathlib import Path
+
+    entry: Dict[str, Any] | None = scan_registry.get(scan_id)
+
+    if entry is None:
+        raise HTTPException(status_code=404, detail=f"Scan '{scan_id}' not found.")
+
+    if entry["status"] != "completed":
+        raise HTTPException(status_code=202, detail=f"Scan '{scan_id}' is still {entry['status']}.")
+
+    result_file = entry.get("result_file")
+    if not result_file:
+        raise HTTPException(status_code=404, detail="Result file not available for this scan.")
+
+    path = Path(result_file)
+    if not path.exists():
+        raise HTTPException(status_code=404, detail=f"Result file not found on disk: {result_file}")
+
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@app.get(
+    "/api/scan/report/{scan_id}",
+    summary="Download scan PDF report",
+    tags=["Scans"],
+)
+async def download_report(scan_id: str):
+    """
+    Generates (or serves a cached copy of) the PDF report for a completed scan.
+    Returns the PDF as an attachment so the browser triggers a download.
+    """
+    import json
+    import sys
+    from pathlib import Path as _Path
+
+    entry: Dict[str, Any] | None = scan_registry.get(scan_id)
+
+    if entry is None:
+        raise HTTPException(status_code=404, detail=f"Scan '{scan_id}' not found.")
+
+    if entry["status"] != "completed":
+        raise HTTPException(status_code=202, detail=f"Scan '{scan_id}' is still {entry['status']}.")
+
+    result_file = entry.get("result_file")
+    if not result_file or not _Path(result_file).exists():
+        raise HTTPException(status_code=404, detail="Scan result file not found on disk.")
+
+    # Check for a cached PDF first
+    reports_dir = _Path("./temp_reports")
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    pdf_path = reports_dir / f"{scan_id}_report.pdf"
+
+    if not pdf_path.exists():
+        # Generate the PDF now
+        try:
+            # Add the core package to sys.path so we can import report_generator
+            core_dir = str(_Path(__file__).parent / "core")
+            if core_dir not in sys.path:
+                sys.path.insert(0, core_dir)
+            from report_generator import build_pdf_report  # type: ignore
+
+            scan_data = json.loads(_Path(result_file).read_text(encoding="utf-8"))
+            pdf_path = build_pdf_report(scan_data, scan_id, output_dir=reports_dir)
+            logger.info("PDF report generated → %s", pdf_path)
+        except Exception as exc:
+            logger.exception("PDF generation failed for scan %s", scan_id)
+            raise HTTPException(status_code=500, detail=f"PDF generation failed: {exc}")
+
+    return FileResponse(
+        path=str(pdf_path),
+        media_type="application/pdf",
+        filename=f"PHANTOM_Report_{scan_id[:8]}.pdf",
+        headers={"Content-Disposition": f"attachment; filename=PHANTOM_Report_{scan_id[:8]}.pdf"},
     )
 
 

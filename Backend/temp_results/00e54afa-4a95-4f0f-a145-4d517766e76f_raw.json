@@ -1,0 +1,202 @@
+{
+  "scan_metadata": {
+    "scan_id": "b7d2e4f1-9c3a-4e8b-a1d5-3f6c8e2b4d7a",
+    "target_url": "http://www.badstore.net",
+    "scan_mode": "quick",
+    "start_time": "2025-01-15T11:00:00Z",
+    "end_time": "2025-01-15T11:12:45Z",
+    "duration_seconds": 765,
+    "mode": "PRE-LOADED",
+    "tools_used": [
+      "nuclei",
+      "owasp-zap"
+    ]
+  },
+  "meta": {
+    "target": "http://www.badstore.net",
+    "mode": "pre-loaded",
+    "note": "Pre-loaded real scan result for demo purposes.",
+    "scan_id": "00e54afa-4a95-4f0f-a145-4d517766e76f",
+    "generated_at": "2026-05-28T18:50:38.585363+00:00"
+  },
+  "nuclei_findings": [
+    {
+      "template_id": "sql-injection-login",
+      "name": "SQL Injection in Login Form",
+      "severity": "critical",
+      "host": "http://www.badstore.net",
+      "matched_url": "http://www.badstore.net/cgi-bin/badstore.cgi?action=login",
+      "type": "http",
+      "description": "The login form is vulnerable to SQL injection. Authentication can be bypassed entirely using OR 1=1 payload.",
+      "payload_used": "' OR '1'='1' --",
+      "extracted_results": [
+        "Authentication bypassed successfully",
+        "Logged in as: admin@badstore.net",
+        "Database: badstore",
+        "Tables: userdb, orderdb, itemdb, creditcards"
+      ],
+      "remediation": "Use parameterized queries. Never concatenate user input into SQL statements.",
+      "cvss_score": 9.9,
+      "tags": [
+        "sqli",
+        "auth-bypass",
+        "critical"
+      ]
+    },
+    {
+      "template_id": "command-injection",
+      "name": "OS Command Injection",
+      "severity": "critical",
+      "host": "http://www.badstore.net",
+      "matched_url": "http://www.badstore.net/cgi-bin/badstore.cgi?action=trackinput&tracknum=1234;ls+-la",
+      "type": "http",
+      "description": "The order tracking field is vulnerable to OS command injection. Appending shell commands executes them on the server.",
+      "payload_used": "1234; cat /etc/passwd",
+      "extracted_results": [
+        "root:x:0:0:root:/root:/bin/bash",
+        "www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin"
+      ],
+      "remediation": "Never pass user input to shell commands. Implement strict input validation.",
+      "cvss_score": 10.0,
+      "tags": [
+        "command-injection",
+        "rce",
+        "critical"
+      ]
+    },
+    {
+      "template_id": "cleartext-credit-card",
+      "name": "Credit Card Data Stored in Cleartext",
+      "severity": "critical",
+      "host": "http://www.badstore.net",
+      "matched_url": "http://www.badstore.net/cgi-bin/badstore.cgi?action=viewcart",
+      "type": "http",
+      "description": "Credit card numbers are stored and transmitted in plaintext. PCI-DSS violation.",
+      "extracted_results": [
+        "Card Number: 4111111111111111",
+        "Expiry: 12/26",
+        "CVV: 123",
+        "Cardholder: John Doe"
+      ],
+      "remediation": "Encrypt all PAN data at rest using AES-256. Tokenize card data.",
+      "cvss_score": 10.0,
+      "tags": [
+        "pci-dss",
+        "cleartext",
+        "credit-card",
+        "critical"
+      ]
+    },
+    {
+      "template_id": "exposed-backup-files",
+      "name": "Backup Files Publicly Accessible",
+      "severity": "high",
+      "host": "http://www.badstore.net",
+      "matched_url": "http://www.badstore.net/backup/",
+      "type": "file",
+      "description": "Backup directory is publicly accessible containing database dumps and source code.",
+      "exposed_files": [
+        "/backup/badstore_db.sql",
+        "/backup/badstore_src.tar.gz",
+        "/backup/config_backup.txt"
+      ],
+      "remediation": "Remove backup files from web-accessible directories.",
+      "cvss_score": 8.6,
+      "tags": [
+        "backup",
+        "exposure",
+        "sensitive-data"
+      ]
+    },
+    {
+      "template_id": "weak-session-token",
+      "name": "Weak Sequential Session Token",
+      "severity": "high",
+      "host": "http://www.badstore.net",
+      "matched_url": "http://www.badstore.net/cgi-bin/badstore.cgi?action=login",
+      "type": "http",
+      "description": "Session tokens are sequential integers making them trivially predictable and brute-forceable.",
+      "evidence": "Set-Cookie: SESSIONID=1042; path=/",
+      "remediation": "Use cryptographically secure random session tokens of at least 128 bits.",
+      "cvss_score": 8.1,
+      "tags": [
+        "session",
+        "weak-token",
+        "hijack"
+      ]
+    }
+  ],
+  "zap_findings": [
+    {
+      "alert": "SQL Injection",
+      "risk": "High",
+      "confidence": "High",
+      "url": "http://www.badstore.net/cgi-bin/badstore.cgi",
+      "method": "POST",
+      "param": "email",
+      "description": "SQL injection confirmed in login email field. Authentication fully bypassable.",
+      "solution": "Use prepared statements and parameterized queries.",
+      "cweid": "89",
+      "wascid": "19"
+    },
+    {
+      "alert": "Cross Site Scripting (Reflected)",
+      "risk": "High",
+      "confidence": "Medium",
+      "url": "http://www.badstore.net/cgi-bin/badstore.cgi",
+      "method": "GET",
+      "param": "searchquery",
+      "description": "Reflected XSS in search functionality.",
+      "solution": "HTML-encode all user-supplied data before rendering.",
+      "cweid": "79",
+      "wascid": "8"
+    },
+    {
+      "alert": "Sensitive Data Exposed in URL",
+      "risk": "Medium",
+      "confidence": "High",
+      "url": "http://www.badstore.net/cgi-bin/badstore.cgi?action=login",
+      "method": "GET",
+      "param": "password",
+      "description": "Login credentials passed as GET parameters visible in logs and browser history.",
+      "solution": "Always use POST for login forms. Never pass credentials in URL parameters.",
+      "cweid": "598",
+      "wascid": "13"
+    },
+    {
+      "alert": "Cookie Without Secure Flag",
+      "risk": "Low",
+      "confidence": "Medium",
+      "url": "http://www.badstore.net/cgi-bin/badstore.cgi?action=login",
+      "method": "POST",
+      "param": "SESSIONID",
+      "description": "Session cookie transmitted without Secure flag.",
+      "solution": "Set Secure flag on all session cookies.",
+      "cweid": "614",
+      "wascid": "13"
+    }
+  ],
+  "summary": {
+    "total_findings": 9,
+    "by_severity": {
+      "critical": 3,
+      "high": 4,
+      "medium": 1,
+      "low": 1,
+      "informational": 0
+    },
+    "overall_risk_score": 9.8,
+    "risk_level": "CRITICAL",
+    "tools_run": [
+      "nuclei (pre-loaded)",
+      "zap (pre-loaded)"
+    ],
+    "top_priority_fixes": [
+      "Fix SQL Injection in login form immediately",
+      "Remove OS command injection in order tracking",
+      "Encrypt all credit card data \u2014 PCI-DSS violation",
+      "Remove publicly accessible backup directory",
+      "Replace sequential session tokens with cryptographically secure tokens"
+    ]
+  }
+}
