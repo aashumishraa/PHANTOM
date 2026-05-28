@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        color: #333;
+        line-height: 1.6;
+      }
+      .header {
+        border-bottom: 3px solid #1e3a8a;
+        padding-bottom: 15px;
+        margin-bottom: 30px;
+      }
+      .header h1 {
+        color: #1e3a8a;
+        margin: 0;
+        font-size: 28px;
+      }
+      .score-box {
+        background: #fee2e2;
+        border-left: 6px solid #ef4444;
+        padding: 15px;
+        margin-bottom: 25px;
+        border-radius: 4px;
+      }
+      .score-box h2 {
+        margin: 0;
+        color: #991b1b;
+      }
+      .finding-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 6px;
+      }
+      .finding-title {
+        margin-top: 0;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        background: #ef4444;
+        color: white;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-right: 10px;
+      }
+      .meta-info {
+        font-size: 14px;
+        color: #64748b;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>PHANTOM Security Assessment Report</h1>
+      <p>Target System: <strong>https://test-target-site.com</strong></p>
+    </div>
+
+    <div class="score-box">
+      <h2>Overall Risk Score: 85/100</h2>
+    </div>
+
+    <h3>Executive Summary</h3>
+    <p>PHANTOM discovered a high-severity multi-step attack chain during the automated assessment, tracking vulnerability exposures across public-facing parameters.</p>
+
+    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0" />
+
+    <h3>Vulnerability Findings</h3>
+    
+    <div class="finding-card">
+      <h4 class="finding-title">
+        <span class="badge">HIGH</span>
+        PH-01: Exposed Backup Directory Configuration
+      </h4>
+      <div class="meta-info">
+        <strong>Discovered via:</strong> OWASP ZAP
+      </div>
+      <p>Sensitive environment configurations and archived database backups were found publicly accessible at /backup/db_dump.sql.</p>
+    </div>
+    
+    <div class="finding-card">
+      <h4 class="finding-title">
+        <span class="badge">MEDIUM</span>
+        PH-02: Server Banner Information Disclosure
+      </h4>
+      <div class="meta-info">
+        <strong>Discovered via:</strong> Nuclei
+      </div>
+      <p>The production server leaks internal component version information via standard response header blocks, aiding attacker profiling.</p>
+    </div>
+    
+  </body>
+</html>

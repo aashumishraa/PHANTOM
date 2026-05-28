@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        color: #333;
+        line-height: 1.6;
+      }
+      .header {
+        border-bottom: 3px solid #1e3a8a;
+        padding-bottom: 15px;
+        margin-bottom: 30px;
+      }
+      .header h1 {
+        color: #1e3a8a;
+        margin: 0;
+        font-size: 28px;
+      }
+      .score-box {
+        background: #fee2e2;
+        border-left: 6px solid #ef4444;
+        padding: 15px;
+        margin-bottom: 25px;
+        border-radius: 4px;
+      }
+      .score-box h2 {
+        margin: 0;
+        color: #991b1b;
+      }
+      .finding-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 6px;
+      }
+      .finding-title {
+        margin-top: 0;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        background: #ef4444;
+        color: white;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-right: 10px;
+      }
+      .meta-info {
+        font-size: 14px;
+        color: #64748b;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>PHANTOM Security Assessment Report</h1>
+      <p>Target System: <strong>{{ target_url }}</strong></p>
+    </div>
+
+    <div class="score-box">
+      <h2>Overall Risk Score: {{ risk_score }}/100</h2>
+    </div>
+
+    <h3>Executive Summary</h3>
+    <p>{{ summary }}</p>
+
+    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0" />
+
+    <h3>Vulnerability Findings</h3>
+    {% for finding in findings %}
+    <div class="finding-card">
+      <h4 class="finding-title">
+        <span class="badge">{{ finding.severity }}</span>
+        {{ finding.id }}: {{ finding.title }}
+      </h4>
+      <div class="meta-info">
+        <strong>Discovered via:</strong> {{ finding.tool }}
+      </div>
+      <p>{{ finding.description }}</p>
+    </div>
+    {% endfor %}
+  </body>
+</html>

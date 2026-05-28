@@ -1,0 +1,21 @@
+{
+  "target_url": "https://test-target-site.com",
+  "risk_score": 85,
+  "summary": "PHANTOM discovered a high-severity multi-step attack chain during the automated assessment, tracking vulnerability exposures across public-facing parameters.",
+  "findings": [
+    {
+      "id": "PH-01",
+      "title": "Exposed Backup Directory Configuration",
+      "severity": "HIGH",
+      "tool": "OWASP ZAP",
+      "description": "Sensitive environment configurations and archived database backups were found publicly accessible at /backup/db_dump.sql."
+    },
+    {
+      "id": "PH-02",
+      "title": "Server Banner Information Disclosure",
+      "severity": "MEDIUM",
+      "tool": "Nuclei",
+      "description": "The production server leaks internal component version information via standard response header blocks, aiding attacker profiling."
+    }
+  ]
+}
